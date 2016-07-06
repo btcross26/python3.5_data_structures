@@ -40,21 +40,21 @@ class BinaryTree(object):
             return
             yield
         else:
-            node = self.root
-            current_key = None
-            n = 0
+            node = self._minimum(self.root)
+            last_key = node.key
+            yield node.key
+            n = 1
             while n < self.size:
-                if node.left and (current_key is None or node.key < current_key):
+                if node.left and node.left.key > last_key:
                     node = node.left
-                else:
+                elif node.key > last_key:
                     n += 1
+                    last_key = node.key
                     yield node.key
-                    current_key = node.key
-                    if node.right:
-                        node = node.right
-                        current_key = None
-                    else:
-                        node = node.parent
+                elif node.right and node.right.key > last_key:
+                    node = node.right
+                else:
+                    node = node.parent
             
     def __list__(self):
         return [value for value in self.__iter__()]
@@ -236,7 +236,9 @@ class BinaryTree(object):
         node2 = self.root
         while node2 is not None:
             node1 = node2
-            if key < node2.key:
+            if key == node2.key:
+                return
+            elif key < node2.key:
                 node2 = node2.left
             else:
                 node2 = node2.right
@@ -312,8 +314,12 @@ class BinaryTree(object):
                 self.delete(key)
         except:
             raise
-
-
+            
+    def ge_key(self, key):
+        pass
+        
+    def le_key(self, key):
+        pass
             
 class RedBlackNode(TreeNode):
     def __init__(self, key, color, parent = None, left = None, right = None):
@@ -326,132 +332,43 @@ class RedBlackTree(BinaryTree):
     def __init__(self, keys = None):
         super().__init__(keys)
         self.nil = RedBlackNode(None, 'b')
-        # self.root = self.nil
-        
-    # def __iter__(self):
-        # if self.root is self.nil:
-            # return
-            # yield
-        # else:
-            # node = self.root
-            # current_key = None
-            # n = 0
-            # while n < self.size:
-                # if node.left is not self.nil and (current_key is None or node.key < current_key):
-                    # node = node.left
-                # else:
-                    # n += 1
-                    # yield node.key
-                    # current_key = node.key
-                    # if node.right is not self.nil:
-                        # node = node.right
-                        # current_key = None
-                    # elif node.parent is not self.nil:
-                        # node = node.parent
-
-    # def _search(self, key):
-        # if key is None:
-            # raise KeyError('RedBlackTree object does not contain key:{:s}'.format(str(key)))
-        # return super()._search(key)
                         
     def _create_node(self, key):
         return RedBlackNode(key, 'r')
-        
+                
     def _left_rotate(self, node):
-        rnode = node.right
-        node.right = rnode.left
-        if rnode.left is not self.nil:
-            rnode.left.parent = node
-        rnode.parent = node.parent
-        if node.parent is self.nil:
-            self.root = rnode
-        elif node is node.parent.left:
-            node.parent.left = rnode
-        else:
-            node.parent.right = rnode
-        rnode.left = node
-        node.parent = rnode
-        
-    def _left_rotate(self, node):
-        rnode = node.right
-        node.right = rnode.left
-        if rnode.left is not None:
-            rnode.left.parent = node
-        rnode.parent = node.parent
+        y = node.right
+        node.right = y.left
+        if y.left is not None:
+            y.left.parent = node
+        y.parent = node.parent
         if node.parent is None:
-            self.root = rnode
+            self.root = y
         elif node is node.parent.left:
-            node.parent.left = rnode
+            node.parent.left = y
         else:
-            node.parent.right = rnode
-        rnode.left = node
-        node.parent = rnode
+            node.parent.right = y
+        y.left = node
+        node.parent = y
         
     def _right_rotate(self, node):
-        rnode = node.left
-        node.left = rnode.right
-        if rnode.right is not self.nil:
-            rnode.right.parent = node
-        rnode.parent = node.parent
-        if node.parent is self.nil:
-            self.root = rnode
-        elif node is node.parent.right:
-            node.parent.right = rnode
-        else:
-            node.parent.left = rnode
-        rnode.right = node
-        node.parent = rnode
-        
-    def _right_rotate(self, node):
-        rnode = node.left
-        node.left = rnode.right
-        if rnode.right is not None:
-            rnode.right.parent = node
-        rnode.parent = node.parent
+        y = node.left
+        node.left = y.right
+        if y.right is not None:
+            y.right.parent = node
+        y.parent = node.parent
         if node.parent is None:
-            self.root = rnode
+            self.root = y
         elif node is node.parent.right:
-            node.parent.right = rnode
+            node.parent.right = y
         else:
-            node.parent.left = rnode
-        rnode.right = node
-        node.parent = rnode
+            node.parent.left = y
+        y.right = node
+        node.parent = y
         
     def _rb_insert_fixup(self, node):
-        while node.parent.color == 'r':
-            if node.parent is node.parent.parent.left:
-                y = node.parent.parent.right
-                if y.color == 'r':
-                    node.parent.color = 'b'
-                    y.color = 'b'
-                    node.parent.parent.color = 'r'
-                    node = node.parent.parent
-                else:
-                    if node is node.parent.right:
-                        node = node.parent
-                        self._left_rotate(node)
-                    node.parent.color = 'b'
-                    node.parent.parent.color = 'r'
-                    self._right_rotate(node.parent.parent)
-            else:
-                y = node.parent.parent.left
-                if y.color == 'r':
-                    node.parent.color = 'b'
-                    y.color = 'b'
-                    node.parent.parent.color = 'r'
-                    node = node.parent.parent
-                else:
-                    if node is node.parent.left:
-                        node = node.parent
-                        self._right_rotate(node)
-                    node.parent.color = 'b'
-                    node.parent.parent.color = 'r'
-                    self._left_rotate(node.parent.parent)
-        self.root.color = 'b'
-        
-    def _rb_insert_fixup(self, node):
-        while node.parent is not None and node.parent.color == 'r':
-            if node.parent.parent is not None:
+        while node is not self.root and node.parent.color == 'r':
+            if node.parent is not self.root:
                 if node.parent is node.parent.parent.left:
                     y = node.parent.parent.right
                     if y is not None and y.color == 'r':
@@ -482,24 +399,6 @@ class RedBlackTree(BinaryTree):
                         self._left_rotate(node.parent.parent)
         self.root.color = 'b'
                         
-    def insert(self, key):
-        node = self._create_node(key)
-        y = self.nil
-        x = self.root
-        while x is not self.nil:
-            y = x
-            x = x.left if node.key < x.key else x.right
-        node.parent = y
-        if y is self.nil:
-            self.root = node
-        elif node.key < y.key:
-            y.left = node
-        else:
-            y.right = node
-        node.left = self.nil
-        node.right = self.nil
-        self._rb_insert_fixup(node)
-        self.size += 1
     
     def insert(self, key):
         node = self._create_node(key)
@@ -507,7 +406,12 @@ class RedBlackTree(BinaryTree):
         x = self.root
         while x is not None:
             y = x
-            x = x.left if node.key < x.key else x.right
+            if key == x.key:
+                return
+            elif key < x.key:
+                x = x.left
+            else:
+                x = x.right
         node.parent = y
         if y is None:
             self.root = node
