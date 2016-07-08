@@ -1,3 +1,8 @@
+# work in progress
+
+class EmptyError(Exception):
+    pass
+
 class TreeNode(object):
     def __init__(self, key, parent = None, left = None, right = None):
         self.key = key
@@ -315,11 +320,75 @@ class BinaryTree(object):
         except:
             raise
             
-    def ge_key(self, key):
-        pass
+    def lub_key(self, key):
+        if self.root is None:
+            raise EmptyError('tree is empty')
+        else:
+            node1 = None
+            node2 = self.root
+            while node2 is not None:
+                node1 = node2
+                if key == node2.key:
+                    return key
+                elif key < node2.key:
+                    node2 = node2.left
+                else:
+                    node2 = node2.right
+            if key > self.maximum():
+                raise ValueError('<arg>:key is greater than the tree maximum value')
+            elif key < node1.key:
+                lub_key = node1.key
+                while True:
+                    temp = self._predecessor(node1.key)
+                    if temp is None:
+                        return self.minimum()
+                    else:
+                        node1 = temp
+                        if key < node1.key:
+                            lub_key = node1.key
+                        else:
+                            break
+                return lub_key
+            else:
+                while True:
+                    node1 = self._successor(node1.key)
+                    if key < node1.key:
+                        return node1.key
         
-    def le_key(self, key):
-        pass
+    def glb_key(self, key):
+        if self.root is None:
+            raise EmptyError('tree is empty')
+        else:
+            node1 = None
+            node2 = self.root
+            while node2 is not None:
+                node1 = node2
+                if key == node2.key:
+                    return key
+                elif key < node2.key:
+                    node2 = node2.left
+                else:
+                    node2 = node2.right
+            if key < self.minimum():
+                raise ValueError('<arg>:key is less than the tree minimum value')
+            elif key > node1.key:
+                glb_key = node1.key
+                while True:
+                    temp = self._successor(node1.key)
+                    if temp is None:
+                        return self.maximum()
+                    else:
+                        node1 = temp
+                        if key > node1.key:
+                            glb_key = node1.key
+                        else:
+                            break
+                return glb_key
+            else:
+                while True:
+                    node1 = self._predecessor(node1.key)
+                    if key > node1.key:
+                        return node1.key
             
 class RedBlackNode(TreeNode):
     def __init__(self, key, color, parent = None, left = None, right = None):
@@ -422,5 +491,95 @@ class RedBlackTree(BinaryTree):
         self._rb_insert_fixup(node)
         self.size += 1
         
-    def delete(self, keys):
-        pass
+    def _rb_delete_fixup(self, node):
+        while node is not self.root and node.color == 'b':
+            if node is node.parent.left:
+                w = node.parent.right
+                if w is not None and w.color == 'r':
+                    w.color = 'b'
+                    node.parent.color = 'r'
+                    self._left_rotate(node.parent)
+                    w = node.parent.right
+                w_left_color = 'b' if w.left is None else w.left.color
+                w_right_color = 'b' if w.right is None else w.right.color
+                if w is not None and w_left_color == 'b' and w_right_color == 'b':
+                    w.color = 'r'
+                    node = node.parent
+                elif w is not None:
+                    if w_right_color == 'b':
+                        w.left.color = 'b'
+                        w.color = 'r'
+                        self._right_rotate(w)
+                        w = node.parent.right
+                    w.color = node.parent.color
+                    node.parent.color = 'b'
+                    w.right.color = 'b'
+                    self._left_rotate(node.parent)
+                    node = self.root
+            else:
+                w = node.parent.left
+                if w is not None and w.color == 'r':
+                    w.color = 'b'
+                    node.parent.color = 'r'
+                    self._right_rotate(node.parent)
+                    w = node.parent.left
+                w_left_color = 'b' if w.left is None else w.left.color
+                w_right_color = 'b' if w.right is None else w.right.color
+                if w is not None and w_left_color == 'b' and w_right_color == 'b':
+                    w.color = 'r'
+                    node = node.parent
+                elif w is not None:
+                    if w_left_color == 'b':
+                        w.right.color = 'b'
+                        w.color = 'r'
+                        self._left_rotate(w)
+                        w = node.parent.left
+                    w.color = node.parent.color
+                    node.parent.color = 'b'
+                    w.left.color = 'b'
+                    self._right_rotate(node.parent)
+                    node = self.root
+        node.color = 'b'
+        
+    def delete(self, key):
+        z = self._search(key)
+        if z is None:
+            raise KeyError('BinaryTree object does not contain key:{:s}'.format(str(key)))
+        y = z
+        y_original_color = y.color
+        if z.left is None:
+            x = z.right
+            if z.parent is None:
+                self.root = z.right
+            elif z is z.parent.left:
+                z.parent.left = z.right
+            else:
+                z.parent.right = z.right
+            z.right.parent = z.parent
+        elif z.right is None:
+            x = z.left
+            if z.parent is None:
+                self.root = z.left
+            elif z is z.parent.left:
+                z.parent.left = z.left
+            else:
+                z.parent.right = z.left
+            z.left.parent = z.parent
+        else:
+            y = self._minimum(z.right)
+            y_original_color = y.color
+            x = y.right
+            if y.parent is z:
+                x.parent = y
+            else:
+                if y.parent is None:
+                    self.root = y.right
+                elif y is y.parent.left:
+                    y.parent.left = y.right
+                else:
+                    y.parent.right = y.right
+                y.right.parent = y.parent         
+        if y_original_color == 'b':
+            self._rb_delete_fixup(x)
+        del z
+        self.size -= 1
