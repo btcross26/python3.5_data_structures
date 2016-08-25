@@ -1,5 +1,5 @@
 import random
-from .linkedlist import DoubleLinkedList
+from . import DoubleLinkedList
 
 class Hashmap(object):
     '''
