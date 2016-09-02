@@ -77,9 +77,8 @@ class Hashmap(object):
         '''
         Resize the underlying array by a factor of _resizing_factor.
         '''
-        print("Resizing...")
         old_array = self._array
-        self._array = [None] * int(len(self._array) * self._resizing_factor)
+        self._array = [None] * int(len(old_array) * self._resizing_factor)
         self._size = 0
         for index, bucket in enumerate(old_array):
             if bucket is not None:
@@ -134,6 +133,12 @@ class Hashmap(object):
             self._size += 1
             if self._size / len(self._array) >= self._load_factor:
                 self._resize()
+                
+    def __contains__(self, key):
+        if self._finditem(key)[1] is None:
+            return False
+        else:
+            return True
         
     def delete(self, key):
         '''
