@@ -11,7 +11,7 @@ class HashmapTest(unittest.TestCase):
             hashmap[i] = i
             self.assertEqual(i, hashmap[i], "insertion error")
             self.assertIn(i, hashmap, "__contains__ error")
-            self.assertEqual(i, len(hashmap), "insertion __len__ error")
+            self.assertEqual(i + 1, len(hashmap), "insertion __len__ error")
                     
         # check that resizing has not occurred (load factor not yet achieved)
         self.assertEqual(len(hashmap._array), 10, "resizing mistakenly occurred")
@@ -21,7 +21,7 @@ class HashmapTest(unittest.TestCase):
             hashmap.delete(i)
             self.assertRaises(KeyError, hashmap.__getitem__, i)
             self.assertNotIn(i, hashmap, "__contains__ error after deletion")
-            self.assertEqual(i, len(hashmap), "deletion __len__ error"
+            self.assertEqual(i, len(hashmap), "deletion __len__ error")
         
     def test_resizing_effect_and_duplicate_insertion(self):
         hashmap = Hashmap(buckets = 5, load_factor = 0.75,
@@ -33,7 +33,7 @@ class HashmapTest(unittest.TestCase):
         # insert 4 elements to surpass load factor
         for i in range(4):
             hashmap[i] = i
-        self.assertEqual(len(hashmap._array, 10, "resizing error 5 to 10")
+        self.assertEqual(len(hashmap._array), 10, "resizing error 5 to 10")
         
         # duplicate insert elements plus 4 more to surpass load factor again
         for i in range(8):
@@ -74,7 +74,7 @@ class HashmapTest(unittest.TestCase):
         # test hashmap.itervalues
         values = [value for key, value in kv_pairs]
         alist = sorted([value for value in hashmap.itervalues()])
-        self.assertEqual(alist, keys, "problem with itervalues method")
+        self.assertEqual(alist, values, "problem with itervalues method")
             
 if __name__ == "__main__":
     unittest.main()
